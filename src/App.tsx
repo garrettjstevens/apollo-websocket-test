@@ -17,6 +17,7 @@ function App() {
             // socket = new WebSocket('ws://demo.genomearchitect.org/Apollo2/stomp')
             // @ts-ignore
             socket = new SockJS('http://demo.genomearchitect.org/Apollo2/stomp')
+            // socket = new SockJS('http://localhost:8080/apollo/stomp')
           } catch (error) {
             setErrorOutput(errorOutput + String(error))
           }
