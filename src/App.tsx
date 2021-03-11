@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import './App.css';
-import SockJS from 'sockjs-client'
+// import SockJS from 'http://demo.genomearchitect.org/Apollo2/jbrowse/plugins/WebApollo/jslib/websocket/spring-websocket.js'
+// const socketScript= 'https://raw.githubusercontent.com/GMOD/Apollo/develop/client/apollo/jslib/websocket/spring-websocket.js'
+// const script = loadScript(socketScript)
+// import SockJS from 'sockjs-client'
+
 
 function App() {
   const [output, setOutput] = useState('')
@@ -14,8 +18,11 @@ function App() {
           let socket: WebSocket | undefined
           try {
             // Use this instead to try with native web socket
-            // socket = new WebSocket('ws://demo.genomearchitect.org/Apollo2/stomp')
-            socket = new SockJS('http://demo.genomearchitect.org/Apollo2/stomp')
+            // let listener = new SockJS(stomp_url);
+            // let client = Stomp.over(this.listener)
+            socket = new WebSocket('ws://demo.genomearchitect.org/Apollo2/stomp')
+            socket.send('wow')
+            // socket = new SockJS('http://localhost:8080/apollo/stomp')
           } catch (error) {
             setErrorOutput(errorOutput + String(error))
           }
