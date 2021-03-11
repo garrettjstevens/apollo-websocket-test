@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
-import SockJS from 'sockjs-client'
+// import SockJS from 'sockjs-client'
 
 function App() {
   const [output, setOutput] = useState('')
@@ -15,6 +15,7 @@ function App() {
           try {
             // Use this instead to try with native web socket
             // socket = new WebSocket('ws://demo.genomearchitect.org/Apollo2/stomp')
+            // @ts-ignore
             socket = new SockJS('http://demo.genomearchitect.org/Apollo2/stomp')
           } catch (error) {
             setErrorOutput(errorOutput + String(error))
@@ -51,9 +52,9 @@ function App() {
         }} disabled={!socket}>Disconnect</button>
       </div>
       <h6>Output</h6>
-      <textarea>{output}</textarea>
+      <textarea value={output} readOnly></textarea>
       <h6>Errors</h6>
-      <textarea>{errorOutput}</textarea>
+      <textarea value={errorOutput} readOnly></textarea>
     </div>
   );
 }
