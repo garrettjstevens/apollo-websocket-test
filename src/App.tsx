@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import axios from "axios";
 // import SockJS from 'sockjs-client'
 
 function App() {
@@ -13,11 +14,17 @@ function App() {
         <button onClick={() => {
           let socket: WebSocket | undefined
           try {
+            // const response = await axios.get('http://demo.genomearchitect.org/Apollo2/stomp')
+            axios.post('http://demo.genomearchitect.org/Apollo2/system').then( (response) =>{
+              console.log('response',response)
+              const {data} = response
+              console.log('data',data)
+            } )
+
             // Use this instead to try with native web socket
             // socket = new WebSocket('ws://demo.genomearchitect.org/Apollo2/stomp')
             // @ts-ignore
-            socket = new SockJS('http://demo.genomearchitect.org/Apollo2/stomp')
-            // socket = new SockJS('http://localhost:8080/apollo/stomp')
+            socket = new SockJS('http://localhost:8080/apollo/stomp')
           } catch (error) {
             setErrorOutput(errorOutput + String(error))
           }
