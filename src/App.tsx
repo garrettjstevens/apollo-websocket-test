@@ -57,11 +57,16 @@ function App() {
               console.log('ON OPEN');
               sock.send('test');
             };
+          client.subscribe("/topic/AnnotationEditorService", function (message:any) {
+            // $("#helloDiv2").append(JSON.parse(message.body));
+            console.log(message)
+          });
 
             console.log('client connected',client.connected)
 
             console.log('A')
             client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
+              // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
             console.log('B')
 
 
