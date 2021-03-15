@@ -42,8 +42,5 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {
-    "@types/sockjs-client": "^1.5.0"
-  },
   "homepage": "."
 }

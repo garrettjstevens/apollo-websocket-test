@@ -4,7 +4,6 @@ import './App.css';
 
 import SockJS from 'sockjs-client'
 import {Stomp} from "@stomp/stompjs";
-import {request} from "https";
 
 let sock : any
 let client : any
@@ -14,7 +13,7 @@ function App() {
   const [errorOutput, setErrorOutput] = useState('')
   const [socket, setSocket] = useState<WebSocket>()
 
-  sock = new SockJS('http://localhost:8080/apollo/stomp')
+  sock = new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
   console.log('sock A',sock)
   // var client = Stomp.client(url);
   client = Stomp.over(sock);
