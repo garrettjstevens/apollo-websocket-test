@@ -65,7 +65,7 @@ function App() {
             console.log('client connected',client.connected)
 
             console.log('A')
-            client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
+            client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output","operation":"ping"}))
               // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
             console.log('B')
 
