@@ -33,12 +33,26 @@ function App() {
             // socket = new WebSocket('ws://demo.genomearchitect.org/Apollo2/stomp')
             // @ts-ignore
             let sock = new SockJS('http://localhost:8080/apollo/stomp')
+            console.log('sock',sock)
+                // var client = Stomp.client(url);
             let client = Stomp.over(sock);
+            // let client = Stomp.client('http://localhost:8080/apollo/stomp')
+            // client.connect( () => {
+            //   console.log('connected')
+            //
+            // })
 
+            // client.send()
+
+            client.activate()
             sock.onopen = function() {
               console.log('open');
               sock.send('test');
             };
+
+            client.publish({
+              destination:'/AnnotationNotification',body:'Ping'
+            })
 
             // sock.onmessage = function(e) {
             //   console.log('message', e.data);
@@ -48,6 +62,7 @@ function App() {
             sock.onclose = function() {
               console.log('close');
             };
+            console.log('finishe dbutton')
             // let client = Stomp.over(listener)
           } catch (error) {
             setErrorOutput(errorOutput + String(error))
