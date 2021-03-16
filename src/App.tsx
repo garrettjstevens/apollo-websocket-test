@@ -28,6 +28,10 @@ function App() {
 
     client.onConnect = function(frame:any){
       console.log('getting frame',frame)
+        client.subscribe("/topic/example", function (message:any) {
+            console.log('listening to example topic')
+            console.log(message)
+        });
         client.subscribe("/topic/AnnotationEditorService", function (message:any) {
             console.log('listening to main topic')
             console.log(message)
