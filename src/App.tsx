@@ -13,7 +13,7 @@ function App() {
   const [errorOutput, setErrorOutput] = useState('')
   const [socket, setSocket] = useState<WebSocket>()
 
-  sock = new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
+  sock = new SockJS('http://localhost:8080/apollo/stomp')
   console.log('sock A',sock)
   // var client = Stomp.client(url);
   client = Stomp.over(sock);
