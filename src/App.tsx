@@ -14,14 +14,15 @@ function App() {
   const [socket, setSocket] = useState<WebSocket>()
 
   sock = new SockJS('http://localhost:8080/apollo/stomp')
-  console.log('sock A',sock)
-  // var client = Stomp.client(url);
   client = Stomp.over(sock);
-  // let client = Stomp.client('http://localhost:8080/apollo/stomp')
-  // client.connect( () => {
-  //   console.log('connected')
-  //
-  // })
+
+  let username:any = undefined
+    const urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.has('username')){
+      username = urlParams.get('username')
+  }
+
+    console.log('usernames',username)
 
   // client.send()
   console.log('client',client)
@@ -32,10 +33,12 @@ function App() {
             console.log('listening to main topic')
             console.log(message)
         });
-        client.subscribe("/topic/AnnotationNotification/user/ndunn@me.com", function (message:any) {
-            console.log('listening to user topic')
-            console.log(message)
-        });
+      if(username){
+          client.subscribe(`/topic/AnnotationNotification/user/${username}`, function (message:any) {
+              console.log('listening to user topic')
+              console.log(message)
+          });
+      }
     }
 
     client.onStompError = function(frame:any){
@@ -49,12 +52,6 @@ function App() {
       <div style={{display: 'flex', flexDirection: 'column'}}>
         <div style={{display: 'flex', flexDirection: 'column', width: 200}}>
         Apollo Web Socket Connection
-        <button onClick={() => {
-          // window.location.href = 'http://demo.genomearchitect.org/Apollo-staging/auth/login?targetUri=http://localhost:3000'
-          window.location.href = 'http://localhost:8080/apollo/auth/login?targetUri=http://localhost:3000'
-        }}>
-          Login
-        </button>
         <button onClick={() => {
           // let socket: WebSocket | undefined
           try {
