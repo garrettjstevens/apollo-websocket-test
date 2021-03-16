@@ -32,11 +32,11 @@ function App() {
             console.log('listening to example topic')
             console.log(message)
         });
-        client.subscribe("/topic/AnnotationEditorService", function (message:any) {
+        client.subscribe("/topic/AnnotationNotification", function (message:any) {
             console.log('listening to main topic')
             console.log(message)
         });
-        client.subscribe("/topic/AnnotationEditorService/user/ndunn@me.com", function (message:any) {
+        client.subscribe("/topic/AnnotationNotification/user/ndunn@me.com", function (message:any) {
             console.log('listening to main topic')
             console.log(message)
         });
