@@ -3,7 +3,7 @@ import './App.css';
 // import axios from "axios";
 
 import {Stomp} from "@stomp/stompjs";
-import SockJS from 'sockjs-client';
+// import SockJS from 'sockjs-client';
 
 let sock : any
 let client : any
@@ -13,7 +13,8 @@ function App() {
   const [errorOutput, setErrorOutput] = useState('')
   const [socket, setSocket] = useState<WebSocket>()
 
-  sock = new SockJS('http://localhost:8080/apollo/stomp')
+  // sock = new SockJS('http://localhost:8080/apollo/stomp')
+  sock = new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
   client = Stomp.over(sock);
 
   let username:any = undefined
