@@ -38,6 +38,10 @@ function App() {
         });
     }
 
+    client.onStompError = function(frame:any){
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);    }
+
   client.activate()
 
 
