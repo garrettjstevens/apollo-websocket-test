@@ -26,10 +26,11 @@ function App() {
       username = urlParams.get('username')
   }
 
-    console.log('usernames',username)
+  console.log('usernames',username)
 
   // client.send()
   console.log('client',client)
+
 
     client.onConnect = function(frame:any){
         console.log('client connected',client.connected)
@@ -40,16 +41,17 @@ function App() {
             console.log(message.binaryBody)
             console.log(message.body)
             console.log(message.headers)
-            const finalOutput = `body======\n${message.body}\n====\ntype: ${message.binaryBody ? 'binary' : 'text' }\nheader:\n${JSON.stringify(message.headers)}}`
+            const finalOutput = `body\n======\n${message.body}\n====\ntype: ${message.binaryBody ? 'binary' : 'text' }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
             setOutput(finalOutput)
         });
-      // if(username){
-      //     client.subscribe(`/topic/AnnotationNotification/user/${username}`, function (message:any) {
-      //         console.log('listening to user topic')
-      //         console.log(message)
-      //         setOutput(message)
-      //     });
-      // }
+      if(username){
+          client.subscribe(`/topic/AnnotationNotification/user/${username}`, function (message:any) {
+              console.log('listening to user topic')
+              const finalOutput = `body\n======\n${message.body}\n====\ntype: ${message.binaryBody ? 'binary' : 'text' }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
+              console.log(finalOutput)
+              setOutput(finalOutput)
+          });
+      }
     }
 
     client.onStompError = function(frame:any){
@@ -66,7 +68,9 @@ function App() {
       <div style={{display: 'flex', flexDirection: 'column'}}>
         <div style={{display: 'flex', flexDirection: 'column', width: 200}}>
         Apollo Web Socket Connection
-        <button onClick={() => {
+        <button
+            disabled={!client.active}
+            onClick={() => {
           // let socket: WebSocket | undefined
           try {
             console.log('sending')
@@ -78,7 +82,9 @@ function App() {
           }
         }}>Test Send
         </button>
-        <button onClick={() => {
+        <button
+            disabled={!client.active}
+            onClick={() => {
             // let socket: WebSocket | undefined
             try {
                 console.log('client connected',client.connected)
@@ -93,7 +99,7 @@ function App() {
         }}>Broadcast Test
         </button>
         <button onClick={() => {
-          client.active && client.disconnect()
+          client.active && client.deactivate()
         }} disabled={!client.active}>Disconnect
         </button>
       </div>
