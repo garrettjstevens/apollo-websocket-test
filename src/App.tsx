@@ -19,6 +19,16 @@ function App() {
   client = Stomp.over(function(){
     return new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
   });
+  client.reconnectDelay = 300
+    client.debug = function (str:string) {
+        console.log(str)
+    };
+  client.onDisconnect  = function(){
+      console.log('disconnected')
+  }
+    client.onWebSocketClose = function(){
+        console.log('websocket closed')
+    }
 
   let username:any = undefined
     const urlParams = new URLSearchParams(window.location.search);
@@ -74,7 +84,11 @@ function App() {
           // let socket: WebSocket | undefined
           try {
             console.log('sending')
-            client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output","operation":"ping"}))
+            // client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output","operation":"ping"}))
+              client.publish({
+                  destination: "/app/AnnotationNotification",
+                  body: JSON.stringify({input: "output", "operation": "ping"})
+              })
               // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
             console.log('sent')
           } catch (error) {
