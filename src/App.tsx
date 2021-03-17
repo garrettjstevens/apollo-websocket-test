@@ -85,10 +85,11 @@ function App() {
           try {
             console.log('sending')
             // client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output","operation":"ping"}))
-              client.publish({
-                  destination: "/app/AnnotationNotification",
-                  body: JSON.stringify({input: "output", "operation": "ping"})
-              })
+              console.log('connected',client.connected,client.active)
+                  client.publish({
+                      destination: "/app/AnnotationNotification",
+                      body: JSON.stringify({input: "output", "operation": "ping"})
+                  })
               // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
             console.log('sent')
           } catch (error) {
