@@ -3,13 +3,14 @@ import './App.css';
 // import axios from "axios";
 
 import {Stomp} from "@stomp/stompjs";
+// import ReactDOM from 'react-dom';
 // import SockJS from 'sockjs-client';
 
 // let sock : any
 let client : any
 
 
-const App = () => {
+const App = (props:any) => {
 
 
     const [output, setOutput] = useState('')
@@ -18,7 +19,10 @@ const App = () => {
     const [constructorHasRun, setConstructorHasRun] = useState(false);
 
 
-    const constructor = () => {
+    let containerEl = document.createElement('div');
+    let externalWindow = null;
+
+    const constructor = (props:any) => {
         if (constructorHasRun) return;
         // sock = new SockJS('http://localhost:8080/apollo/stomp')
         // sock = new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
@@ -83,7 +87,7 @@ const App = () => {
         setConstructorHasRun(true);
     };
 
-    constructor()
+    constructor(props)
 
 
 
@@ -91,6 +95,22 @@ const App = () => {
       <div style={{display: 'flex', flexDirection: 'column'}}>
         <div style={{display: 'flex', flexDirection: 'column', width: 200}}>
         Apollo Web Socket Connection
+            <button
+            onClick={ () => {
+                const loginUrl = 'http://localhost:8080/apollo/auth/login?targetUri=http://localhost:3000'
+                window.location.href = loginUrl
+                // ReactDOM.createPortal(props.children, containerEl);
+                // externalWindow = window.open(
+                //     'http://localhost:8080/apollo/auth/login?targetUri=http://localhost:3000',
+                //     '_blank', 'width=600,height=400,left=200,top=200'
+                // );
+
+                // alert('login')
+                // STEP 1: create a container <div>
+                // http://localhost:8080/apollo/auth/login?targetUri=http://localhost:3000
+            }}>
+                Login
+            </button>
         <button
             disabled={!client.active}
             onClick={() => {
