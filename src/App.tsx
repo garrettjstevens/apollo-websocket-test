@@ -15,7 +15,10 @@ function App() {
 
   // sock = new SockJS('http://localhost:8080/apollo/stomp')
   sock = new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
-  client = Stomp.over(sock);
+  // client = Stomp.over(sock);
+  client = Stomp.over(function(){
+    return new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
+  });
 
   let username:any = undefined
     const urlParams = new URLSearchParams(window.location.search);
