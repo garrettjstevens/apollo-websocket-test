@@ -1,35 +1,21 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './App.css'
-// import axios from "axios";
 
-import { Stomp } from '@stomp/stompjs'
-// import SockJS from 'sockjs-client';
-
-// let sock : any
-let client: any
+import { CompatClient, Stomp } from '@stomp/stompjs'
 
 const App = () => {
   const [output, setOutput] = useState('')
   const [errorOutput, setErrorOutput] = useState('')
-  const [socket, setSocket] = useState<WebSocket>()
-  const [constructorHasRun, setConstructorHasRun] = useState(false)
+  const [client, setClient] = useState<CompatClient>()
 
-  const constructor = () => {
-    if (constructorHasRun) return
-    // sock = new SockJS('http://localhost:8080/apollo/stomp')
-    // sock = new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
-    // client = Stomp.over(sock);
-    client = Stomp.over(function () {
+  useEffect(() => {
+    const c = Stomp.over(function () {
       return new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
     })
-    // client.reconnectDelay = 300
-    // client.debug = function (str:string) {
-    //     console.log(str)
-    // };
-    client.onDisconnect = function () {
+    c.onDisconnect = function () {
       console.log('disconnected')
     }
-    client.onWebSocketClose = function () {
+    c.onWebSocketClose = function () {
       console.log('websocket closed')
     }
 
@@ -41,29 +27,25 @@ const App = () => {
 
     console.log('usernames', username)
 
-    // client.send()
-    console.log('client', client)
+    console.log('client', c)
 
-    client.onConnect = function (frame: any) {
-      console.log('client connected', client.connected)
-      console.log('client connected state', client.state)
+    c.onConnect = function (frame: any) {
+      console.log('client connected', c.connected)
+      console.log('client connected state', c.state)
       console.log('getting frame', frame)
-      client.subscribe(
-        '/topic/AnnotationNotification',
-        function (message: any) {
-          console.log('listening to main topic')
-          console.log(message)
-          console.log(message.binaryBody)
-          console.log(message.body)
-          console.log(message.headers)
-          const finalOutput = `body\n======\n${message.body}\n====\ntype: ${
-            message.binaryBody ? 'binary' : 'text'
-          }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
-          setOutput(finalOutput)
-        }
-      )
+      c.subscribe('/topic/AnnotationNotification', function (message: any) {
+        console.log('listening to main topic')
+        console.log(message)
+        console.log(message.binaryBody)
+        console.log(message.body)
+        console.log(message.headers)
+        const finalOutput = `body\n======\n${message.body}\n====\ntype: ${
+          message.binaryBody ? 'binary' : 'text'
+        }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
+        setOutput(finalOutput)
+      })
       if (username) {
-        client.subscribe(
+        c.subscribe(
           `/topic/AnnotationNotification/user/${username}`,
           function (message: any) {
             console.log('listening to user topic')
@@ -75,19 +57,25 @@ const App = () => {
           }
         )
       }
+      return () => {
+        c.deactivate()
+      }
     }
 
-    client.onStompError = function (frame: any) {
+    c.onStompError = function (frame: any) {
       console.error('Broker reported error: ' + frame.headers['message'])
       console.error('Additional details: ' + frame.body)
       setErrorOutput(frame.headers['message'])
     }
 
-    client.activate()
-    setConstructorHasRun(true)
-  }
+    c.activate()
 
-  constructor()
+    setClient(c)
+  }, [])
+
+  if (!(client && client.active)) {
+    return null
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -96,16 +84,13 @@ const App = () => {
         <button
           disabled={!client.active}
           onClick={() => {
-            // let socket: WebSocket | undefined
             try {
               console.log('sending')
-              // client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output","operation":"ping"}))
               console.log('connected', client.connected, client.active)
               client.publish({
                 destination: '/app/AnnotationNotification',
                 body: JSON.stringify({ input: 'output', operation: 'ping' }),
               })
-              // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
               console.log('sent')
             } catch (error) {
               setErrorOutput(errorOutput + String(error))
@@ -117,7 +102,6 @@ const App = () => {
         <button
           disabled={!client.active}
           onClick={() => {
-            // let socket: WebSocket | undefined
             try {
               console.log('client connected', client.connected)
 
@@ -127,7 +111,6 @@ const App = () => {
                 {},
                 JSON.stringify({ input: 'output', operation: 'broadcast' })
               )
-              // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
               console.log('sent')
             } catch (error) {
               setErrorOutput(errorOutput + String(error))
