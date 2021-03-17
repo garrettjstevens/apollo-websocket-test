@@ -3,7 +3,7 @@ import './App.css';
 // import axios from "axios";
 
 import {Stomp} from "@stomp/stompjs";
-import SockJS from 'sockjs-client';
+// import SockJS from 'sockjs-client';
 
 let sock : any
 let client : any
@@ -13,7 +13,8 @@ function App() {
   const [errorOutput, setErrorOutput] = useState('')
   const [socket, setSocket] = useState<WebSocket>()
 
-  sock = new SockJS('http://localhost:8080/apollo/stomp')
+  // sock = new SockJS('http://localhost:8080/apollo/stomp')
+  sock = new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
   client = Stomp.over(sock);
 
   let username:any = undefined
@@ -32,18 +33,23 @@ function App() {
         client.subscribe("/topic/AnnotationNotification", function (message:any) {
             console.log('listening to main topic')
             console.log(message)
+            setOutput(message)
         });
       if(username){
           client.subscribe(`/topic/AnnotationNotification/user/${username}`, function (message:any) {
               console.log('listening to user topic')
               console.log(message)
+              setOutput(message)
           });
       }
     }
 
     client.onStompError = function(frame:any){
         console.error('Broker reported error: ' + frame.headers['message']);
-        console.error('Additional details: ' + frame.body);    }
+        console.error('Additional details: ' + frame.body);
+        setErrorOutput(frame.headers['message'])
+  }
+
 
   client.activate()
 
@@ -67,8 +73,22 @@ function App() {
         }}>Connect
         </button>
         <button onClick={() => {
-          socket && socket.close()
-        }} disabled={!socket}>Disconnect
+            // let socket: WebSocket | undefined
+            try {
+                console.log('client connected',client.connected)
+
+                console.log('sending')
+                client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output","operation":"broadcast"}))
+                // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
+                console.log('sent')
+            } catch (error) {
+                setErrorOutput(errorOutput + String(error))
+            }
+        }}>Broadcast Test
+        </button>
+        <button onClick={() => {
+          client.active && client.close()
+        }} disabled={!client.active}>Disconnect
         </button>
       </div>
       <h6>Output</h6>
