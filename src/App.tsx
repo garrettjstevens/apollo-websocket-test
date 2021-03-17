@@ -29,19 +29,24 @@ function App() {
   console.log('client',client)
 
     client.onConnect = function(frame:any){
-      console.log('getting frame',frame)
+        console.log('client connected',client.connected)
+        console.log('getting frame',frame)
         client.subscribe("/topic/AnnotationNotification", function (message:any) {
             console.log('listening to main topic')
             console.log(message)
-            setOutput(message)
+            console.log(message.binaryBody)
+            console.log(message.body)
+            console.log(message.headers)
+            const finalOutput = `body======\n${message.body}\n====\ntype: ${message.binaryBody ? 'binary' : 'text' }\nheader:\n${JSON.stringify(message.headers)}}`
+            setOutput(finalOutput)
         });
-      if(username){
-          client.subscribe(`/topic/AnnotationNotification/user/${username}`, function (message:any) {
-              console.log('listening to user topic')
-              console.log(message)
-              setOutput(message)
-          });
-      }
+      // if(username){
+      //     client.subscribe(`/topic/AnnotationNotification/user/${username}`, function (message:any) {
+      //         console.log('listening to user topic')
+      //         console.log(message)
+      //         setOutput(message)
+      //     });
+      // }
     }
 
     client.onStompError = function(frame:any){
@@ -61,8 +66,6 @@ function App() {
         <button onClick={() => {
           // let socket: WebSocket | undefined
           try {
-            console.log('client connected',client.connected)
-
             console.log('sending')
             client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output","operation":"ping"}))
               // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
@@ -70,7 +73,7 @@ function App() {
           } catch (error) {
             setErrorOutput(errorOutput + String(error))
           }
-        }}>Connect
+        }}>Test Send
         </button>
         <button onClick={() => {
             // let socket: WebSocket | undefined
@@ -87,14 +90,14 @@ function App() {
         }}>Broadcast Test
         </button>
         <button onClick={() => {
-          client.active && client.close()
+          client.active && client.disconnect()
         }} disabled={!client.active}>Disconnect
         </button>
       </div>
       <h6>Output</h6>
-      <textarea value={output} readOnly></textarea>
+      <textarea rows={10} value={output} readOnly/>
       <h6>Errors</h6>
-      <textarea value={errorOutput} readOnly></textarea>
+      <textarea rows={10} value={errorOutput} readOnly/>
     </div>
   );
 }
