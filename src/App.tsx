@@ -141,6 +141,28 @@ const App = () => {
         {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
         <button
           onClick={() => {
+            try {
+              console.log('client connected', client && client.connected)
+              console.log('sending')
+              client &&
+                client.publish({
+                  destination: '/app/AnnotationNotification',
+                  body: JSON.stringify({
+                    operation: 'logout',
+                  }),
+                })
+              console.log('sent')
+            } catch (error) {
+              setErrorOutput(errorOutput + String(error))
+            }
+          }}
+          disabled={!(client && client.active)}
+        >
+          Logout
+        </button>
+        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+        <button
+          onClick={() => {
             client && client.active && client.deactivate()
           }}
           disabled={!(client && client.active)}
