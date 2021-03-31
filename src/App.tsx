@@ -136,7 +136,7 @@ const App = () => {
           disabled={(client && client.active) || !username || !password}
           onClick={onConnectClick}
         >
-          Connect
+          Login
         </button>
         {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
         <button
@@ -174,6 +174,38 @@ const App = () => {
           disabled={!(client && client.active)}
           onClick={() => {
             try {
+              client &&
+                client.publish({
+                  destination: '/app/AnnotationNotification',
+                  body: JSON.stringify({ operation: 'admin' }),
+                })
+            } catch (error) {
+              setErrorOutput(errorOutput + String(error))
+            }
+          }}
+        >
+          Is Current Admin
+        </button>
+        <button
+          disabled={!(client && client.active)}
+          onClick={() => {
+            try {
+              client &&
+                client.publish({
+                  destination: '/app/AnnotationNotification',
+                  body: JSON.stringify({ operation: 'currentUser' }),
+                })
+            } catch (error) {
+              setErrorOutput(errorOutput + String(error))
+            }
+          }}
+        >
+          Get Current User
+        </button>
+        <button
+          disabled={!(client && client.active)}
+          onClick={() => {
+            try {
               console.log('sending')
               console.log(
                 'connected',
@@ -191,7 +223,7 @@ const App = () => {
             }
           }}
         >
-          Test Send
+          Test Ping Send
         </button>
         <button
           disabled={!(client && client.active)}
