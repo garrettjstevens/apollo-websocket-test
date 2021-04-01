@@ -28,7 +28,7 @@ const App = () => {
     }
     url.protocol = url.protocol.startsWith('https') ? 'wss' : 'ws'
     url.pathname += '/stomp/websocket'
-    url.search = `?username=${username}&password=${password}`
+    // url.search = `?username=${username}&password=${password}`
     const c = new Client({
       brokerURL: url.href,
     })
