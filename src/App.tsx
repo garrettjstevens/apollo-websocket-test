@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import './App.css'
 
 import { Client, Frame, Message } from '@stomp/stompjs'
+import axios from "axios";
 
 const App = () => {
   const [apolloUrl, setApolloUrl] = useState('http://localhost:8080/apollo')
@@ -17,6 +18,52 @@ const App = () => {
       client && client.deactivate()
     }
   }, [client])
+
+  async function ajaxLogin(){
+    let url: URL
+    try {
+      url = new URL(apolloUrl)
+    } catch (error) {
+      setErrorMessage('URL is not valid')
+      return
+    }
+    let loginObject = {
+      username: username,
+      password: password,
+      operation: 'login',
+      rememberMe: false,
+    }
+    const response = await axios.post(apolloUrl + '/Login?operation=login',loginObject,{})
+
+    console.log('response',response)
+    const { data } = await response
+    console.log('data',data)
+    if(response.status==200){
+      window.location.reload(false);
+    }
+    return data
+
+  }
+
+  async function ajaxLogout(){
+    let url: URL
+    try {
+      url = new URL(apolloUrl)
+    } catch (error) {
+      setErrorMessage('URL is not valid')
+      return
+    }
+    const response = await axios.post(apolloUrl + '/Login?operation=logout',{},{})
+
+    console.log('response',response)
+    const { data } = await response
+    console.log('data',data)
+    if(response.status==200){
+      window.location.reload(false);
+    }
+    return data
+
+  }
 
   function onConnectClick() {
     let url: URL
@@ -92,6 +139,7 @@ const App = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', flexDirection: 'column', width: 240 }}>
+        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
         <h4>Apollo Web Socket Connection</h4>
           <ul>
           {/*<li>*/}
@@ -148,12 +196,11 @@ const App = () => {
         >
           WebSocket Login (expect fail if not logged in elsewhere)
         </button>
-        {/*<button*/}
-        {/*    onClick={ajaxLogin}*/}
-        {/*>*/}
-        {/*  Ajax Login */}
-        {/*</button>*/}
-        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+        <button
+            onClick={ajaxLogin}
+        >
+          Ajax Login
+        </button>
         <button
           onClick={() => {
             try {
@@ -173,9 +220,13 @@ const App = () => {
           }}
           disabled={!(client && client.active)}
         >
-          Logout
+          WebSocket Logout (we expect a fail)
         </button>
-        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+        <button
+            onClick={ajaxLogout}
+        >
+          Ajax Logout (should succeed)
+        </button>
         <button
           onClick={() => {
             client && client.active && client.deactivate()
@@ -185,22 +236,22 @@ const App = () => {
           Disconnect
         </button>
         <hr style={{ width: '200%' }} />
-        <button
-          // disabled={!(client && client.active)}
-          onClick={() => {
-            try {
-              client &&
-                client.publish({
-                  destination: '/app/AnnotationNotification',
-                  body: JSON.stringify({ operation: 'admin' }),
-                })
-            } catch (error) {
-              setErrorOutput(errorOutput + String(error))
-            }
-          }}
-        >
-          Is Current Admin
-        </button>
+        {/*<button*/}
+        {/*  // disabled={!(client && client.active)}*/}
+        {/*  onClick={() => {*/}
+        {/*    try {*/}
+        {/*      client &&*/}
+        {/*        client.publish({*/}
+        {/*          destination: '/app/AnnotationNotification',*/}
+        {/*          body: JSON.stringify({ operation: 'admin' ,username:username}),*/}
+        {/*        })*/}
+        {/*    } catch (error) {*/}
+        {/*      setErrorOutput(errorOutput + String(error))*/}
+        {/*    }*/}
+        {/*  }}*/}
+        {/*>*/}
+        {/*  Is Current Admin*/}
+        {/*</button>*/}
         <button
           // disabled={!(client && client.active)}
           onClick={() => {
