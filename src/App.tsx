@@ -47,19 +47,22 @@ const App = () => {
 
   async function ajaxLogout(){
     let url: URL
+    // const finalUrl:string = apolloUrl + '/asdfas/Login?operation=logout&targetUri=/apollo'
+    const finalUrl:string = `${apolloUrl}/login/logout?targetUri=/apollo&username=${username}`
     try {
-      url = new URL(apolloUrl)
+      alert(finalUrl)
+      url = new URL(finalUrl)
     } catch (error) {
       setErrorMessage('URL is not valid')
       return
     }
-    const response = await axios.post(apolloUrl + '/Login?operation=logout&targetUri=/apollo',{},{})
+    const response = await axios.post(finalUrl,{},{})
 
     console.log('response',response)
     const { data } = await response
     console.log('data',data)
     if(response.status==200){
-      // window.location.reload(false);
+      window.location.reload(true);
     }
     return data
 
@@ -167,7 +170,7 @@ const App = () => {
               setApolloUrl(event.target.value)
               setErrorMessage('')
             }}
-            disabled={client && client.active}
+            // disabled={client && client.active}
           />
         </label>
         <label style={{ marginBottom: 40 }}>
@@ -180,7 +183,7 @@ const App = () => {
               setUsername(event.target.value)
               setErrorMessage('')
             }}
-            disabled={client && client.active}
+            // disabled={client && client.active}
           />
         </label>
         <label style={{ marginBottom: 40 }}>
