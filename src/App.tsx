@@ -93,6 +93,17 @@ const App = () => {
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', flexDirection: 'column', width: 240 }}>
         <h4>Apollo Web Socket Connection</h4>
+          <ul>
+          {/*<li>*/}
+          {/*  Client: {client!==undefined ? client : 'None'}*/}
+          {/*</li>*/}
+          <li>
+            Active: {client?.active ? 'active' : 'inactive'}
+            </li>
+            <li>
+          Connected: {client?.connected ? 'connected' : 'not connected'}
+            </li>
+          </ul>
         <label style={{ marginBottom: 40 }}>
           Apollo URL:
           <input
@@ -133,11 +144,15 @@ const App = () => {
           />
         </label>
         <button
-          disabled={(client && client.active) || !username || !password}
           onClick={onConnectClick}
         >
-          Login
+          WebSocket Login (expect fail if not logged in elsewhere)
         </button>
+        {/*<button*/}
+        {/*    onClick={ajaxLogin}*/}
+        {/*>*/}
+        {/*  Ajax Login */}
+        {/*</button>*/}
         {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
         <button
           onClick={() => {
@@ -171,7 +186,7 @@ const App = () => {
         </button>
         <hr style={{ width: '200%' }} />
         <button
-          disabled={!(client && client.active)}
+          // disabled={!(client && client.active)}
           onClick={() => {
             try {
               client &&
@@ -187,7 +202,7 @@ const App = () => {
           Is Current Admin
         </button>
         <button
-          disabled={!(client && client.active)}
+          // disabled={!(client && client.active)}
           onClick={() => {
             try {
               client &&
@@ -203,7 +218,7 @@ const App = () => {
           Get Current User
         </button>
         <button
-          disabled={!(client && client.active)}
+          // disabled={!(client && client.active)}
           onClick={() => {
             try {
               console.log('sending')
@@ -226,7 +241,7 @@ const App = () => {
           Test Ping Send
         </button>
         <button
-          disabled={!(client && client.active)}
+          // disabled={!(client && client.active)}
           onClick={() => {
             try {
               console.log('client connected', client && client.connected)
