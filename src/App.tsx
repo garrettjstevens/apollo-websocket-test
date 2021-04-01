@@ -39,7 +39,7 @@ const App = () => {
     const { data } = await response
     console.log('data',data)
     if(response.status==200){
-      window.location.reload(false);
+      // window.location.reload(false);
     }
     return data
 
@@ -53,13 +53,13 @@ const App = () => {
       setErrorMessage('URL is not valid')
       return
     }
-    const response = await axios.post(apolloUrl + '/Login?operation=logout',{},{})
+    const response = await axios.post(apolloUrl + '/Login?operation=logout&targetUri=/apollo',{},{})
 
     console.log('response',response)
     const { data } = await response
     console.log('data',data)
     if(response.status==200){
-      window.location.reload(false);
+      // window.location.reload(false);
     }
     return data
 
@@ -120,6 +120,11 @@ const App = () => {
             }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
             console.log(finalOutput)
             setOutput(finalOutput)
+            const messageBody = JSON.parse(message.body)
+            if(messageBody.operation==='logout'){
+              alert('loggin out')
+              window.location.reload(true);
+            }
           }
         )
       }
