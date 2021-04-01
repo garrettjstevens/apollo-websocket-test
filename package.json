@@ -22,7 +22,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "deploy": "react-scripts build && rm -rf /Users/nathandunn/repositories/APOLLO/nathanApolloMaster/web-app/jb2-client && cp -r build /Users/nathandunn/repositories/APOLLO/nathanApolloMaster/web-app/jb2-client"
   },
   "browserslist": {
     "production": [

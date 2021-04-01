@@ -21,8 +21,10 @@ const App = () => {
 
   async function ajaxLogin(){
     let url: URL
+    // const finalUrl:string = `${apolloUrl}/login/login?targetUri=/apollo&username=${username}`
+    const finalUrl:string = `${apolloUrl}/Login?operation=login&username=${username}`
     try {
-      url = new URL(apolloUrl)
+      url = new URL(finalUrl)
     } catch (error) {
       setErrorMessage('URL is not valid')
       return
@@ -33,7 +35,8 @@ const App = () => {
       operation: 'login',
       rememberMe: false,
     }
-    const response = await axios.post(apolloUrl + '/Login?operation=login',loginObject,{})
+    alert(finalUrl)
+    const response = await axios.post(finalUrl,loginObject,{})
 
     console.log('response',response)
     const { data } = await response
