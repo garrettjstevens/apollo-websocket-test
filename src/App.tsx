@@ -1,162 +1,331 @@
-import React, {useState} from 'react';
-import './App.css';
-// import axios from "axios";
+import React, { useEffect, useState } from 'react'
+import './App.css'
 
-import {Stomp} from "@stomp/stompjs";
-// import ReactDOM from 'react-dom';
-// import SockJS from 'sockjs-client';
+import { Client, Frame, Message } from '@stomp/stompjs'
+import axios from "axios";
 
-// let sock : any
-let client : any
+const App = () => {
+  const [apolloUrl, setApolloUrl] = useState('http://localhost:8080/apollo')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [output, setOutput] = useState('')
+  const [errorOutput, setErrorOutput] = useState('')
+  const [client, setClient] = useState<Client>()
 
+  useEffect(() => {
+    return () => {
+      client && client.deactivate()
+    }
+  }, [client])
 
-const App = (props:any) => {
+  async function ajaxLogin(){
+    let url: URL
+    try {
+      url = new URL(apolloUrl)
+    } catch (error) {
+      setErrorMessage('URL is not valid')
+      return
+    }
+    let loginObject = {
+      username: username,
+      password: password,
+      operation: 'login',
+      rememberMe: false,
+    }
+    const response = await axios.post(apolloUrl + '/Login?operation=login',loginObject,{})
 
+    console.log('response',response)
+    const { data } = await response
+    console.log('data',data)
+    if(response.status==200){
+      // window.location.reload(false);
+    }
+    return data
 
-    const [output, setOutput] = useState('')
-    const [errorOutput, setErrorOutput] = useState('')
-    const [socket, setSocket] = useState<WebSocket>()
-    const [constructorHasRun, setConstructorHasRun] = useState(false);
+  }
 
+  async function ajaxLogout(){
+    let url: URL
+    try {
+      url = new URL(apolloUrl)
+    } catch (error) {
+      setErrorMessage('URL is not valid')
+      return
+    }
+    const response = await axios.post(apolloUrl + '/Login?operation=logout&targetUri=/apollo',{},{})
 
-    let containerEl = document.createElement('div');
-    let externalWindow = null;
+    console.log('response',response)
+    const { data } = await response
+    console.log('data',data)
+    if(response.status==200){
+      // window.location.reload(false);
+    }
+    return data
 
-    const constructor = (props:any) => {
-        if (constructorHasRun) return;
-        // sock = new SockJS('http://localhost:8080/apollo/stomp')
-        // sock = new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
-        // client = Stomp.over(sock);
-        client = Stomp.over(function(){
-            return new WebSocket('ws://localhost:8080/apollo/stomp/websocket')
-        });
-        // client.reconnectDelay = 300
-        // client.debug = function (str:string) {
-        //     console.log(str)
-        // };
-        client.onDisconnect  = function(){
-            console.log('disconnected')
-        }
-        client.onWebSocketClose = function(){
-            console.log('websocket closed')
-        }
+  }
 
-        let username:any = undefined
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.has('username')){
-            username = urlParams.get('username')
-        }
+  function onConnectClick() {
+    let url: URL
+    try {
+      url = new URL(apolloUrl)
+    } catch (error) {
+      setErrorMessage('URL is not valid')
+      return
+    }
+    url.protocol = url.protocol.startsWith('https') ? 'wss' : 'ws'
+    url.pathname += '/stomp/websocket'
+    // url.search = `?username=${username}&password=${password}`
+    const c = new Client({
+      brokerURL: url.href,
+    })
+    c.onDisconnect = () => {
+      c.deactivate()
+      setClient(undefined)
+      console.log('disconnected')
+    }
+    c.onWebSocketClose = (event) => {
+      setClient(undefined)
+      console.log('websocket closed')
+      console.log(event)
+    }
+    c.onWebSocketError = (event) => {
+      setErrorMessage(
+        'Problem opening web socket, please check URL, username, and password'
+      )
+    }
 
-        console.log('usernames',username)
-
-        // client.send()
-        console.log('client',client)
-
-
-        client.onConnect = function(frame:any){
-            console.log('client connected',client.connected)
-            console.log('client connected state',client.state)
-            console.log('getting frame',frame)
-            client.subscribe("/topic/AnnotationNotification", function (message:any) {
-                console.log('listening to main topic')
-                console.log(message)
-                console.log(message.binaryBody)
-                console.log(message.body)
-                console.log(message.headers)
-                const finalOutput = `body\n======\n${message.body}\n====\ntype: ${message.binaryBody ? 'binary' : 'text' }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
-                setOutput(finalOutput)
-            });
-            if(username){
-                client.subscribe(`/topic/AnnotationNotification/user/${username}`, function (message:any) {
-                    console.log('listening to user topic')
-                    const finalOutput = `body\n======\n${message.body}\n====\ntype: ${message.binaryBody ? 'binary' : 'text' }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
-                    console.log(finalOutput)
-                    setOutput(finalOutput)
-                });
+    c.onConnect = (frame: Frame) => {
+      console.log('client connected', c.connected)
+      console.log('client connected state', c.state)
+      console.log('getting frame', frame)
+      c.subscribe('/topic/AnnotationNotification', (message: Message) => {
+        console.log('listening to main topic')
+        console.log(message)
+        console.log(message.binaryBody)
+        console.log(message.body)
+        console.log(message.headers)
+        const finalOutput = `body\n======\n${message.body}\n====\ntype: ${
+          message.binaryBody ? 'binary' : 'text'
+        }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
+        setOutput(finalOutput)
+      })
+      if (username) {
+        c.subscribe(
+          `/topic/AnnotationNotification/user/${username}`,
+          (message: Message) => {
+            console.log('listening to user topic')
+            const finalOutput = `body\n======\n${message.body}\n====\ntype: ${
+              message.binaryBody ? 'binary' : 'text'
+            }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
+            console.log(finalOutput)
+            setOutput(finalOutput)
+            const messageBody = JSON.parse(message.body)
+            if(messageBody.operation==='logout'){
+              alert('loggin out')
+              window.location.reload(true);
             }
-        }
+          }
+        )
+      }
+    }
 
-        client.onStompError = function(frame:any){
-            console.error('Broker reported error: ' + frame.headers['message']);
-            console.error('Additional details: ' + frame.body);
-            setErrorOutput(frame.headers['message'])
-        }
+    c.onStompError = (frame: Frame) => {
+      console.error('Broker reported error: ' + frame.headers['message'])
+      console.error('Additional details: ' + frame.body)
+      setErrorOutput(frame.headers['message'])
+    }
 
+    c.activate()
 
-        client.activate()
-        setConstructorHasRun(true);
-    };
-
-    constructor(props)
-
-
+    setClient(c)
+  }
 
   return (
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        <div style={{display: 'flex', flexDirection: 'column', width: 200}}>
-        Apollo Web Socket Connection
-            <button
-            onClick={ () => {
-                const loginUrl = 'http://localhost:8080/apollo/auth/login?targetUri=http://localhost:3000'
-                window.location.href = loginUrl
-                // ReactDOM.createPortal(props.children, containerEl);
-                // externalWindow = window.open(
-                //     'http://localhost:8080/apollo/auth/login?targetUri=http://localhost:3000',
-                //     '_blank', 'width=600,height=400,left=200,top=200'
-                // );
-
-                // alert('login')
-                // STEP 1: create a container <div>
-                // http://localhost:8080/apollo/auth/login?targetUri=http://localhost:3000
-            }}>
-                Login
-            </button>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', width: 240 }}>
+        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+        <h4>Apollo Web Socket Connection</h4>
+          <ul>
+          {/*<li>*/}
+          {/*  Client: {client!==undefined ? client : 'None'}*/}
+          {/*</li>*/}
+          <li>
+            Active: {client?.active ? 'active' : 'inactive'}
+            </li>
+            <li>
+          Connected: {client?.connected ? 'connected' : 'not connected'}
+            </li>
+          </ul>
+        <label style={{ marginBottom: 40 }}>
+          Apollo URL:
+          <input
+            type="text"
+            size={60}
+            value={apolloUrl}
+            onChange={(event) => {
+              setApolloUrl(event.target.value)
+              setErrorMessage('')
+            }}
+            disabled={client && client.active}
+          />
+        </label>
+        <label style={{ marginBottom: 40 }}>
+          Username:
+          <input
+            type="text"
+            size={60}
+            value={username}
+            onChange={(event) => {
+              setUsername(event.target.value)
+              setErrorMessage('')
+            }}
+            disabled={client && client.active}
+          />
+        </label>
+        <label style={{ marginBottom: 40 }}>
+          Password:
+          <input
+            type="password"
+            size={60}
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value)
+              setErrorMessage('')
+            }}
+            disabled={client && client.active}
+          />
+        </label>
         <button
-            disabled={!client.active}
-            onClick={() => {
-          // let socket: WebSocket | undefined
-          try {
-            console.log('sending')
-            // client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output","operation":"ping"}))
-              console.log('connected',client.connected,client.active)
-                  client.publish({
-                      destination: "/app/AnnotationNotification",
-                      body: JSON.stringify({input: "output", "operation": "ping"})
-                  })
-              // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
-            console.log('sent')
-          } catch (error) {
-            setErrorOutput(errorOutput + String(error))
-          }
-        }}>Test Send
+          onClick={onConnectClick}
+        >
+          WebSocket Login (expect fail if not logged in elsewhere)
         </button>
         <button
-            disabled={!client.active}
-            onClick={() => {
-            // let socket: WebSocket | undefined
+            onClick={ajaxLogin}
+        >
+          Ajax Login
+        </button>
+        <button
+          onClick={() => {
             try {
-                console.log('client connected',client.connected)
-
-                console.log('sending')
-                client.send("/app/AnnotationNotification",{},JSON.stringify({input:"output","operation":"broadcast"}))
-                // client.publish("/app/AnnotationNotification",{},JSON.stringify({input:"output"}))
-                console.log('sent')
+              console.log('client connected', client && client.connected)
+              console.log('sending')
+              client &&
+                client.publish({
+                  destination: '/app/AnnotationNotification',
+                  body: JSON.stringify({
+                    operation: 'logout',
+                  }),
+                })
+              console.log('sent')
             } catch (error) {
-                setErrorOutput(errorOutput + String(error))
+              setErrorOutput(errorOutput + String(error))
             }
-        }}>Broadcast Test
+          }}
+          disabled={!(client && client.active)}
+        >
+          WebSocket Logout (we expect a fail)
         </button>
-        <button onClick={() => {
-          client.active && client.deactivate()
-        }} disabled={!client.active}>Disconnect
+        <button
+            onClick={ajaxLogout}
+        >
+          Ajax Logout (should succeed)
+        </button>
+        <button
+          onClick={() => {
+            client && client.active && client.deactivate()
+          }}
+          disabled={!(client && client.active)}
+        >
+          Disconnect
+        </button>
+        <hr style={{ width: '200%' }} />
+        {/*<button*/}
+        {/*  // disabled={!(client && client.active)}*/}
+        {/*  onClick={() => {*/}
+        {/*    try {*/}
+        {/*      client &&*/}
+        {/*        client.publish({*/}
+        {/*          destination: '/app/AnnotationNotification',*/}
+        {/*          body: JSON.stringify({ operation: 'admin' ,username:username}),*/}
+        {/*        })*/}
+        {/*    } catch (error) {*/}
+        {/*      setErrorOutput(errorOutput + String(error))*/}
+        {/*    }*/}
+        {/*  }}*/}
+        {/*>*/}
+        {/*  Is Current Admin*/}
+        {/*</button>*/}
+        <button
+          // disabled={!(client && client.active)}
+          onClick={() => {
+            try {
+              client &&
+                client.publish({
+                  destination: '/app/AnnotationNotification',
+                  body: JSON.stringify({ operation: 'currentUser' }),
+                })
+            } catch (error) {
+              setErrorOutput(errorOutput + String(error))
+            }
+          }}
+        >
+          Get Current User
+        </button>
+        <button
+          // disabled={!(client && client.active)}
+          onClick={() => {
+            try {
+              console.log('sending')
+              console.log(
+                'connected',
+                client && client.connected,
+                client && client.active
+              )
+              client &&
+                client.publish({
+                  destination: '/app/AnnotationNotification',
+                  body: JSON.stringify({ input: 'output', operation: 'ping' }),
+                })
+              console.log('sent')
+            } catch (error) {
+              setErrorOutput(errorOutput + String(error))
+            }
+          }}
+        >
+          Test Ping Send
+        </button>
+        <button
+          // disabled={!(client && client.active)}
+          onClick={() => {
+            try {
+              console.log('client connected', client && client.connected)
+
+              console.log('sending')
+              client &&
+                client.publish({
+                  destination: '/app/AnnotationNotification',
+                  body: JSON.stringify({
+                    input: 'output',
+                    operation: 'broadcast',
+                  }),
+                })
+              console.log('sent')
+            } catch (error) {
+              setErrorOutput(errorOutput + String(error))
+            }
+          }}
+        >
+          Broadcast Test
         </button>
       </div>
       <h6>Output</h6>
-      <textarea rows={10} value={output} readOnly/>
+      <textarea rows={10} value={output} readOnly />
       <h6>Errors</h6>
-      <textarea rows={10} value={errorOutput} readOnly/>
+      <textarea rows={10} value={errorOutput} readOnly />
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
