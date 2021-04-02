@@ -40,7 +40,7 @@ const App = () => {
 
     const { data } = await response
     if(response.status==200){
-      window.location.reload(true);
+      // window.location.reload(true);
     }
     return data
 
