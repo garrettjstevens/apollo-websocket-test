@@ -38,11 +38,9 @@ const App = () => {
     alert(finalUrl)
     const response = await axios.post(finalUrl,loginObject,{})
 
-    console.log('response',response)
     const { data } = await response
-    console.log('data',data)
     if(response.status==200){
-      // window.location.reload(false);
+      window.location.reload(true);
     }
     return data
 
@@ -61,9 +59,7 @@ const App = () => {
     }
     const response = await axios.post(finalUrl,{},{})
 
-    console.log('response',response)
     const { data } = await response
-    console.log('data',data)
     if(response.status==200){
       window.location.reload(true);
     }
