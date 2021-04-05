@@ -4,6 +4,9 @@ import './App.css'
 import { Client, Frame, Message } from '@stomp/stompjs'
 import axios from "axios";
 
+
+console.log('WDS_SOCKET_PATH',process.env)
+
 const App = () => {
   const [apolloUrl, setApolloUrl] = useState('http://localhost:8080/apollo')
   const [username, setUsername] = useState('')
