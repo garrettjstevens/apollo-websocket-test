@@ -73,18 +73,31 @@ const App = () => {
 
   function onConnectClick() {
     let url: URL
-    try {
-      url = new URL(apolloUrl)
-    } catch (error) {
-      setErrorMessage('URL is not valid')
-      return
-    }
-    url.protocol = url.protocol.startsWith('https') ? 'wss' : 'ws'
-    url.pathname += '/stomp/websocket'
-    console.log(url.href)
+    console.log('new url ')
+    console.log(apolloUrl)
+    console.log(window.location)
+
+    // try {
+    //   url = new URL(apolloUrl)
+    // } catch (error) {
+    //   setErrorMessage('URL is not valid')
+    //   return
+    // }
+
+    // we want this: ws://localhost:8080/apollo/stomp/websocket
+    const puntURL = 'ws://localhost:8080/apollo/stomp/websocket'
+    console.log('input url')
+    // console.log(url)
+    // url.protocol = url.protocol.startsWith('https') ? 'wss' : 'ws'
+    // url.pathname += '/stomp/websocket'
+    // console.log('full url')
+    // console.log(url)
+    // console.log(url.href)
     // url.search = `?username=${username}&password=${password}`
     const c = new Client({
-      brokerURL: url.href,
+      // brokerURL: url.href,
+      brokerURL: puntURL,
+      // brokerURL: '/apollo/stomp/websocket',
     })
     c.onDisconnect = () => {
       c.deactivate()
