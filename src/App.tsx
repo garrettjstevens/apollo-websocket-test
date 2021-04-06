@@ -2,11 +2,16 @@ import React, { useEffect, useState } from 'react'
 import './App.css'
 
 import { Client, Frame, Message } from '@stomp/stompjs'
+import axios from "axios";
+
+
+console.log('WDS_SOCKET_PATH',process.env)
 
 const App = () => {
   const [apolloUrl, setApolloUrl] = useState('http://localhost:8080/apollo')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  // const [apolloUrl, setApolloUrl] = useState('/apollo')
+  const [username, setUsername] = useState('admin@local.host')
+  const [password, setPassword] = useState('password')
   const [errorMessage, setErrorMessage] = useState('')
   const [output, setOutput] = useState('')
   const [errorOutput, setErrorOutput] = useState('')
@@ -18,14 +23,65 @@ const App = () => {
     }
   }, [client])
 
+  async function ajaxLogin(){
+    let url: URL
+    // const finalUrl:string = `${apolloUrl}/login/login?targetUri=/apollo&username=${username}`
+    const finalUrl:string = `${apolloUrl}/Login?operation=login&username=${username}`
+    try {
+      url = new URL(finalUrl)
+    } catch (error) {
+      setErrorMessage('URL is not valid')
+      return
+    }
+    let loginObject = {
+      username: username,
+      password: password,
+      operation: 'login',
+      rememberMe: false,
+    }
+    // alert(finalUrl)
+    const response = await axios.post(finalUrl,loginObject,{})
+
+    const { data } = await response
+    if(response.status==200){
+      // window.location.reload(true);
+    }
+    return data
+
+  }
+
+  async function ajaxLogout(){
+    let url: URL
+    const finalUrl:string = `${apolloUrl}/login/logout?targetUri=/apollo&username=${username}`
+    try {
+      url = new URL(finalUrl)
+    } catch (error) {
+      setErrorMessage('URL is not valid')
+      return
+    }
+    const response = await axios.post(finalUrl,{},{})
+
+    const { data } = await response
+    if(response.status==200){
+      window.location.reload(true);
+    }
+    return data
+
+  }
+
   function onConnectClick() {
     let url: URL
+    console.log('new url ')
+    console.log(apolloUrl)
+    console.log(window.location)
+
     try {
       url = new URL(apolloUrl)
     } catch (error) {
       setErrorMessage('URL is not valid')
       return
     }
+
     url.protocol = url.protocol.startsWith('https') ? 'wss' : 'ws'
     url.pathname += '/stomp/websocket'
     url.search = `?username=${username}&password=${password}`
@@ -73,6 +129,11 @@ const App = () => {
             }\nheader:\n${JSON.stringify(message.headers)}\n=====\n`
             console.log(finalOutput)
             setOutput(finalOutput)
+            const messageBody = JSON.parse(message.body)
+            if(messageBody.operation==='logout'){
+              alert('loggin out')
+              window.location.reload(true);
+            }
           }
         )
       }
@@ -92,7 +153,19 @@ const App = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', flexDirection: 'column', width: 240 }}>
+        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
         <h4>Apollo Web Socket Connection</h4>
+          <ul>
+          {/*<li>*/}
+          {/*  Client: {client!==undefined ? client : 'None'}*/}
+          {/*</li>*/}
+          <li>
+            Active: {client?.active ? 'active' : 'inactive'}
+            </li>
+            <li>
+          Connected: {client?.connected ? 'connected' : 'not connected'}
+            </li>
+          </ul>
         <label style={{ marginBottom: 40 }}>
           Apollo URL:
           <input
@@ -103,7 +176,7 @@ const App = () => {
               setApolloUrl(event.target.value)
               setErrorMessage('')
             }}
-            disabled={client && client.active}
+            // disabled={client && client.active}
           />
         </label>
         <label style={{ marginBottom: 40 }}>
@@ -116,7 +189,7 @@ const App = () => {
               setUsername(event.target.value)
               setErrorMessage('')
             }}
-            disabled={client && client.active}
+            // disabled={client && client.active}
           />
         </label>
         <label style={{ marginBottom: 40 }}>
@@ -133,12 +206,30 @@ const App = () => {
           />
         </label>
         <button
-          disabled={(client && client.active) || !username || !password}
           onClick={onConnectClick}
         >
-          Login
+          WebSocket Login
         </button>
-        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+        <button
+            onClick={ async () => {
+              const response = await axios.post(apolloUrl+'/annotationEditor/getFeatures',{
+                username: username,
+                password: password,
+                sequence: 'Group1.10',
+                organism: 'Honeybee'
+              },{})
+              const { data } = response
+              setOutput(JSON.stringify(data))
+              // alert(JSON.stringify(data))
+            }}
+        >
+          Ajax Get Features
+        </button>
+        <button
+            onClick={ajaxLogin}
+        >
+          Ajax Login
+        </button>
         <button
           onClick={() => {
             try {
@@ -158,9 +249,13 @@ const App = () => {
           }}
           disabled={!(client && client.active)}
         >
-          Logout
+          WebSocket Logout
         </button>
-        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+        <button
+            onClick={ajaxLogout}
+        >
+          Ajax Logout (should succeed)
+        </button>
         <button
           onClick={() => {
             client && client.active && client.deactivate()
@@ -170,24 +265,24 @@ const App = () => {
           Disconnect
         </button>
         <hr style={{ width: '200%' }} />
+        {/*<button*/}
+        {/*  // disabled={!(client && client.active)}*/}
+        {/*  onClick={() => {*/}
+        {/*    try {*/}
+        {/*      client &&*/}
+        {/*        client.publish({*/}
+        {/*          destination: '/app/AnnotationNotification',*/}
+        {/*          body: JSON.stringify({ operation: 'admin' ,username:username}),*/}
+        {/*        })*/}
+        {/*    } catch (error) {*/}
+        {/*      setErrorOutput(errorOutput + String(error))*/}
+        {/*    }*/}
+        {/*  }}*/}
+        {/*>*/}
+        {/*  Is Current Admin*/}
+        {/*</button>*/}
         <button
-          disabled={!(client && client.active)}
-          onClick={() => {
-            try {
-              client &&
-                client.publish({
-                  destination: '/app/AnnotationNotification',
-                  body: JSON.stringify({ operation: 'admin' }),
-                })
-            } catch (error) {
-              setErrorOutput(errorOutput + String(error))
-            }
-          }}
-        >
-          Is Current Admin
-        </button>
-        <button
-          disabled={!(client && client.active)}
+          // disabled={!(client && client.active)}
           onClick={() => {
             try {
               client &&
@@ -203,7 +298,7 @@ const App = () => {
           Get Current User
         </button>
         <button
-          disabled={!(client && client.active)}
+          // disabled={!(client && client.active)}
           onClick={() => {
             try {
               console.log('sending')
@@ -226,7 +321,7 @@ const App = () => {
           Test Ping Send
         </button>
         <button
-          disabled={!(client && client.active)}
+          // disabled={!(client && client.active)}
           onClick={() => {
             try {
               console.log('client connected', client && client.connected)
