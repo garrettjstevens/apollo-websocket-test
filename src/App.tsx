@@ -52,10 +52,8 @@ const App = () => {
 
   async function ajaxLogout(){
     let url: URL
-    // const finalUrl:string = apolloUrl + '/asdfas/Login?operation=logout&targetUri=/apollo'
     const finalUrl:string = `${apolloUrl}/login/logout?targetUri=/apollo&username=${username}`
     try {
-      alert(finalUrl)
       url = new URL(finalUrl)
     } catch (error) {
       setErrorMessage('URL is not valid')
@@ -84,20 +82,11 @@ const App = () => {
       return
     }
 
-    // we want this: ws://localhost:8080/apollo/stomp/websocket
-    // const puntURL = 'ws://localhost:8080/apollo/stomp/websocket'
-    console.log('input url')
-    // console.log(url)
     url.protocol = url.protocol.startsWith('https') ? 'wss' : 'ws'
     url.pathname += '/stomp/websocket'
-    // console.log('full url')
-    // console.log(url)
-    // console.log(url.href)
     url.search = `?username=${username}&password=${password}`
     const c = new Client({
       brokerURL: url.href,
-      // brokerURL: puntURL,
-      // brokerURL: '/apollo/stomp/websocket',
     })
     c.onDisconnect = () => {
       c.deactivate()
@@ -219,7 +208,7 @@ const App = () => {
         <button
           onClick={onConnectClick}
         >
-          WebSocket Login (expect fail if not logged in elsewhere)
+          WebSocket Login
         </button>
         <button
             onClick={ajaxLogin}
@@ -245,7 +234,7 @@ const App = () => {
           }}
           disabled={!(client && client.active)}
         >
-          WebSocket Logout (we expect a fail)
+          WebSocket Logout
         </button>
         <button
             onClick={ajaxLogout}
