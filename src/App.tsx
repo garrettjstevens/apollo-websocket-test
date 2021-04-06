@@ -211,6 +211,21 @@ const App = () => {
           WebSocket Login
         </button>
         <button
+            onClick={ async () => {
+              const response = await axios.post(apolloUrl+'/annotationEditor/getFeatures',{
+                username: username,
+                password: password,
+                sequence: 'Group1.10',
+                organism: 'Honeybee'
+              },{})
+              const { data } = response
+              setOutput(JSON.stringify(data))
+              // alert(JSON.stringify(data))
+            }}
+        >
+          Ajax Get Features
+        </button>
+        <button
             onClick={ajaxLogin}
         >
           Ajax Login
