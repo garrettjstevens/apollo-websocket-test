@@ -8,8 +8,8 @@ import axios from "axios";
 console.log('WDS_SOCKET_PATH',process.env)
 
 const App = () => {
-  // const [apolloUrl, setApolloUrl] = useState('http://localhost:8080/apollo')
-  const [apolloUrl, setApolloUrl] = useState('/apollo')
+  const [apolloUrl, setApolloUrl] = useState('http://localhost:8080/apollo')
+  // const [apolloUrl, setApolloUrl] = useState('/apollo')
   const [username, setUsername] = useState('admin@local.host')
   const [password, setPassword] = useState('password')
   const [errorMessage, setErrorMessage] = useState('')
@@ -27,12 +27,12 @@ const App = () => {
     let url: URL
     // const finalUrl:string = `${apolloUrl}/login/login?targetUri=/apollo&username=${username}`
     const finalUrl:string = `${apolloUrl}/Login?operation=login&username=${username}`
-    // try {
-    //   // url = new URL(finalUrl)
-    // } catch (error) {
-    //   setErrorMessage('URL is not valid')
-    //   return
-    // }
+    try {
+      url = new URL(finalUrl)
+    } catch (error) {
+      setErrorMessage('URL is not valid')
+      return
+    }
     let loginObject = {
       username: username,
       password: password,
@@ -77,26 +77,26 @@ const App = () => {
     console.log(apolloUrl)
     console.log(window.location)
 
-    // try {
-    //   url = new URL(apolloUrl)
-    // } catch (error) {
-    //   setErrorMessage('URL is not valid')
-    //   return
-    // }
+    try {
+      url = new URL(apolloUrl)
+    } catch (error) {
+      setErrorMessage('URL is not valid')
+      return
+    }
 
     // we want this: ws://localhost:8080/apollo/stomp/websocket
-    const puntURL = 'ws://localhost:8080/apollo/stomp/websocket'
+    // const puntURL = 'ws://localhost:8080/apollo/stomp/websocket'
     console.log('input url')
     // console.log(url)
-    // url.protocol = url.protocol.startsWith('https') ? 'wss' : 'ws'
-    // url.pathname += '/stomp/websocket'
+    url.protocol = url.protocol.startsWith('https') ? 'wss' : 'ws'
+    url.pathname += '/stomp/websocket'
     // console.log('full url')
     // console.log(url)
     // console.log(url.href)
-    // url.search = `?username=${username}&password=${password}`
+    url.search = `?username=${username}&password=${password}`
     const c = new Client({
-      // brokerURL: url.href,
-      brokerURL: puntURL,
+      brokerURL: url.href,
+      // brokerURL: puntURL,
       // brokerURL: '/apollo/stomp/websocket',
     })
     c.onDisconnect = () => {
